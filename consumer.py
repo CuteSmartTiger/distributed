@@ -15,7 +15,7 @@ tcp_port = 8888
 seed_nodes = [
     # "http://localhost:5001",
     "http://127.0.0.1:5002",
-    # "http://localhost:5003",
+    "http://localhost:5003",
     # "http://localhost:5004"
 ]
 node = GossipNode(
@@ -132,18 +132,7 @@ def on_connect(client, userdata, flags, rc):
 
 # 收到消息回调：核心处理逻辑（解析、存储、业务处理等）
 def on_message(client, userdata, msg):
-    # 解析消息内容（msg.payload 是字节类型，需解码）
-    topic = msg.topic
     payload = msg.payload.decode("utf-8")
-    qos = msg.qos
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-
-    # print(f"\n📩 收到消息 [{timestamp}]")
-    # print(f"   Topic: {topic}")
-    # print(f"   QoS: {qos}")
-    # print(f"   原始消息: {payload}")
-
-    # 进阶：解析 JSON 格式消息（Producer 发送 JSON 时用）
     try:
         msg_json = json.loads(payload)
         if node.should_process(msg_json['producer_id']):

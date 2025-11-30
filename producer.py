@@ -45,7 +45,7 @@ def continuous_send():
     try:
         while True:
             # 构造动态消息（模拟传感器数据）
-            for i in range(5):
+            for i in range(50):
                 message = {
                     "producer_id": f"temp-{i}",
                     "seq":count,

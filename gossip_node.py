@@ -21,8 +21,8 @@ HEARTBEAT_INTERVAL_SEC = 5
 NODE_TIMEOUT_SEC = 15
 
 # 一致性哈希配置
-VIRTUAL_NODES = 4
-RING_SIZE = 2 ** 3
+VIRTUAL_NODES = 20
+RING_SIZE = 2 ** 6
 
 # --- 工具函数 ---
 def hash_key(key: str) -> int:
@@ -55,11 +55,8 @@ class GossipNode:
 
     # --- 集群成员管理 ---
     def merge_members(self, incoming_members: Dict[str, Dict]):
-        print("merging members")
-
         current_time = time.time()
         updated = False
-        print("merging members unlock")
         for node_id, info in incoming_members.items():
             if not info or "url" not in info:
                 continue
@@ -73,7 +70,6 @@ class GossipNode:
         self._clean_timeout_members()
         if updated:
             self._update_hash_ring()
-        print("merged members end")
 
     def _clean_timeout_members(self):
         current_time = time.time()
@@ -130,6 +126,8 @@ class GossipNode:
                 idx = 0
 
             virtual_hash = self.virtual_node_hashes[idx]
+            print("当前 id {}，hash 值 {},虚拟节点下标为 {} 计算最近的虚拟节点为 {}".format(
+                message_id, message_hash,idx,virtual_hash))
             return self.virtual_node_map[virtual_hash]
 
     def should_process(self, message_id: str) -> bool:
@@ -141,7 +139,6 @@ class GossipNode:
         target_url = None
         with self.members_lock:
             peers = [info["url"] for node_id, info in self.members.items() if node_id != self.node_id]
-        print("peers:", peers)
         if peers:
             target_url = random.choice(peers)
         elif self.seed_nodes:
@@ -185,7 +182,7 @@ class GossipNode:
             if now - last_clean_timeout > NODE_TIMEOUT_SEC / 3:
                 self._clean_timeout_members()
                 last_clean_timeout = now
-            print("gossip 在执行中======================")
+            print("gossip 完成当前周期新集群内部信息更新")
             time.sleep(1)
 
     # --- 节点启动与停止 ---
@@ -196,26 +193,8 @@ class GossipNode:
         gossip_thread.start()
         print(f"[{self.node_id}] Gossip协议循环启动成功")
 
-        # # 保持主线程运行
-        # try:
-        #     while True:
-        #         time.sleep(1)
-        # except KeyboardInterrupt:
-        #     print(f"\n[{self.node_id}] 收到停止信号，正在关闭...")
-        #     print(f"[{self.node_id}] 节点已关闭")
 
 if __name__ == "__main__":
-    import sys
-
-    # 命令行参数：python gossip_node.py <node_id> <http_port> <tcp_port>
-    # if len(sys.argv) != 4:
-    #     print("用法：python gossip_node.py <节点ID> <HTTP端口> <TCP端口>")
-    #     print("示例：python gossip_node.py node1 5001 6001")
-    #     sys.exit(1)
-
-    # node_id = sys.argv[1]
-    # http_port = int(sys.argv[2])
-    # tcp_port = int(sys.argv[3])
 
     node_id = "node1"
     http_port = 5001

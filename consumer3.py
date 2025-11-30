@@ -7,15 +7,15 @@ import requests
 from gossip_node import GossipNode
 
 
-node_id = "node2"
-http_port = 5002
+node_id = "node3"
+http_port = 5003
 tcp_port = 8888
 
 # 种子节点：默认将第一个节点（node1，HTTP端口5001）作为种子
 seed_nodes = [
     "http://127.0.0.1:5001",
-    # "http://localhost:5002",
-    "http://localhost:5003",
+    "http://localhost:5002",
+    # "http://localhost:5003",
     # "http://localhost:5004"
 ]
 node = GossipNode(
